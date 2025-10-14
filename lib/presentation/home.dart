@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 class Home extends StatelessWidget {
-  const Home({super.key});
+  final String email;
+  const Home({super.key, required this.email});
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      body: Container(child: Center(child: Text('Home - $email'))),
+    );
   }
 }

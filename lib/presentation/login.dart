@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:submission_flutter_pemula/presentation/home.dart';
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
   const Login({super.key});
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +107,7 @@ class Login extends StatelessWidget {
                             ),
                             const SizedBox(height: 32),
                             TextField(
+                              controller: emailController,
                               decoration: InputDecoration(
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -116,6 +126,8 @@ class Login extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             TextField(
+                              controller: passwordController,
+
                               obscureText: true,
                               decoration: InputDecoration(
                                 fillColor: Colors.white,
@@ -143,7 +155,19 @@ class Login extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  // KE HOME
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return Home(
+                                          email: emailController.text,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
                                 child: Text(
                                   "Sign In",
                                   style: TextStyle(
