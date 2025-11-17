@@ -26,7 +26,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final isMobile = width < 800; // MOBILE CHECK
+    final isMobile = width < 800;
 
     return Scaffold(
       body: GestureDetector(
@@ -51,12 +51,12 @@ class _LoginState extends State<Login> {
     return Row(
       children: [
         Expanded(flex: 3, child: _headerImage()),
-        Expanded(flex: 2, child: _formSection()),
+        Expanded(flex: 2, child: Center(child: _formSection())),
       ],
     );
   }
 
-  // ======================= LEFT IMAGE AREA ===========================
+  // ======================= LEFT IMAGE AREA ==============================
   Widget _headerImage() {
     return Container(
       decoration: BoxDecoration(
@@ -145,6 +145,7 @@ class _LoginState extends State<Login> {
 
           const SizedBox(height: 24),
 
+          // LOGIN BUTTON
           SizedBox(
             width: double.infinity,
             height: 45,
@@ -178,7 +179,7 @@ class _LoginState extends State<Login> {
                   return;
                 }
 
-                // ========== VALIDASI PASSWORD MINIMAL ==========
+                // ========== VALIDASI PANJANG PASSWORD ==========
                 if (password.length < 6) {
                   _showSnackbar(context, "Password minimal 6 karakter");
                   return;
@@ -190,7 +191,6 @@ class _LoginState extends State<Login> {
                   MaterialPageRoute(builder: (_) => Home(email: email)),
                 );
               },
-
               child: const Text(
                 "Sign In",
                 style: TextStyle(
@@ -206,6 +206,7 @@ class _LoginState extends State<Login> {
           const Text("Or sign in with"),
           const SizedBox(height: 12),
 
+          // SOCIAL LOGIN
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
