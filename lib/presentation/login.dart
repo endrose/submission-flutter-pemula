@@ -1,22 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:submission_flutter_pemula/presentation/home.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
-
-  @override
-  State<Login> createState() => _LoginState();
-}
-
-class _LoginState extends State<Login> {
+// ==========================================================
+// HELPER CLASS untuk controller + validasi (tetap bisa dipakai di Stateless)
+// ==========================================================
+class LoginController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  void _showSnackbar(BuildContext context, String message) {
+  String? validate(String email, String password) {
+    if (email.isEmpty) return "Email tidak boleh kosong";
+
+    final emailRegex = RegExp(r"^[\w\.\-]+@([\w\-]+\.)+[\w]{2,4}$");
+    if (!emailRegex.hasMatch(email)) return "Format email tidak valid";
+
+    if (password.isEmpty) return "Password tidak boleh kosong (Isikan apa saja!)";
+
+    if (password.length < 6) return "Password minimal 6 karakter";
+
+    return null; // valid
+  }
+}
+
+// ==========================================================
+// LOGIN PAGE – Versi Stateless
+// ==========================================================
+class Login extends StatelessWidget {
+  Login({super.key});
+
+  final controller = LoginController();
+
+  void _showSnackbar(BuildContext context, String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.red,
-        content: Text(message),
+        content: Text(msg),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
       ),
@@ -31,46 +49,48 @@ class _LoginState extends State<Login> {
     return Scaffold(
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: isMobile ? _buildMobileLayout() : _buildWebLayout(),
+        child: isMobile
+            ? _buildMobileLayout(context)
+            : _buildWebLayout(context),
       ),
     );
   }
 
   // ======================= MOBILE (FORM ONLY) ===========================
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: _formSection(),
+        child: _formSection(context),
       ),
     );
   }
 
-  // ======================= DESKTOP / WEB (IMAGE LEFT + FORM) =======================
-  Widget _buildWebLayout() {
+  // ======================= DESKTOP/TABLET (IMAGE + FORM) =======================
+  Widget _buildWebLayout(BuildContext context) {
     return Row(
       children: [
         Expanded(flex: 3, child: _headerImage()),
-        Expanded(flex: 2, child: Center(child: _formSection())),
+        Expanded(flex: 2, child: Center(child: _formSection(context))),
       ],
     );
   }
 
-  // ======================= LEFT IMAGE AREA ==============================
+  // ======================= HEADER IMAGE ==============================
   Widget _headerImage() {
     return Container(
-      decoration: BoxDecoration(
-        image: const DecorationImage(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
           image: AssetImage("assets/images/dicoding-camp2025.png"),
           fit: BoxFit.cover,
         ),
       ),
       child: Container(
         color: Colors.black.withOpacity(0.4),
-        child: Center(
+        child: const Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Icon(Icons.login, color: Colors.white, size: 32),
               SizedBox(width: 12),
               Text(
@@ -88,8 +108,8 @@ class _LoginState extends State<Login> {
     );
   }
 
-  // ======================= RIGHT FORM ===============================
-  Widget _formSection() {
+  // ======================= FORM SECTION ===============================
+  Widget _formSection(BuildContext context) {
     return Container(
       width: 400,
       padding: const EdgeInsets.all(32),
@@ -118,9 +138,9 @@ class _LoginState extends State<Login> {
 
           const SizedBox(height: 32),
 
-          // EMAIL
+          // EMAIL FIELD
           TextField(
-            controller: emailController,
+            controller: controller.emailController,
             decoration: InputDecoration(
               labelText: "Email",
               border: OutlineInputBorder(
@@ -131,9 +151,9 @@ class _LoginState extends State<Login> {
 
           const SizedBox(height: 16),
 
-          // PASSWORD
+          // PASSWORD FIELD
           TextField(
-            controller: passwordController,
+            controller: controller.passwordController,
             obscureText: true,
             decoration: InputDecoration(
               labelText: "Password",
@@ -145,7 +165,7 @@ class _LoginState extends State<Login> {
 
           const SizedBox(height: 24),
 
-          // LOGIN BUTTON
+          // SIGN IN BUTTON
           SizedBox(
             width: double.infinity,
             height: 45,
@@ -157,35 +177,15 @@ class _LoginState extends State<Login> {
                 ),
               ),
               onPressed: () {
-                final email = emailController.text.trim();
-                final password = passwordController.text.trim();
+                final email = controller.emailController.text.trim();
+                final pass = controller.passwordController.text.trim();
 
-                // ========== VALIDASI EMAIL KOSONG ==========
-                if (email.isEmpty) {
-                  _showSnackbar(context, "Email tidak boleh kosong");
+                final msg = controller.validate(email, pass);
+                if (msg != null) {
+                  _showSnackbar(context, msg);
                   return;
                 }
 
-                // ========== VALIDASI FORMAT EMAIL ==========
-                final emailRegex = RegExp(r"^[\w\.\-]+@([\w\-]+\.)+[\w]{2,4}$");
-                if (!emailRegex.hasMatch(email)) {
-                  _showSnackbar(context, "Format email tidak valid");
-                  return;
-                }
-
-                // ========== VALIDASI PASSWORD KOSONG ==========
-                if (password.isEmpty) {
-                  _showSnackbar(context, "Password tidak boleh kosong");
-                  return;
-                }
-
-                // ========== VALIDASI PANJANG PASSWORD ==========
-                if (password.length < 6) {
-                  _showSnackbar(context, "Password minimal 6 karakter");
-                  return;
-                }
-
-                // ========== JIKA VALID → LANJUT LOGIN ==========
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => Home(email: email)),
@@ -210,11 +210,11 @@ class _LoginState extends State<Login> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _socialIconGoogle(),
+              _socialIcon("assets/images/google.png"),
               const SizedBox(width: 16),
-              _socialIconTwitter(),
+              _socialIcon("assets/images/twitter.jpg"),
               const SizedBox(width: 16),
-              _socialIconInstagram(),
+              _socialIcon("assets/images/instagram.jpg"),
             ],
           ),
         ],
@@ -222,15 +222,7 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget _socialIconGoogle() {
-    return Image.asset("assets/images/google.png", width: 32, height: 32);
-  }
-
-  Widget _socialIconTwitter() {
-    return Image.asset("assets/images/twitter.jpg", width: 32, height: 32);
-  }
-
-  Widget _socialIconInstagram() {
-    return Image.asset("assets/images/instagram.jpg", width: 32, height: 32);
+  Widget _socialIcon(String path) {
+    return Image.asset(path, width: 32, height: 32);
   }
 }
