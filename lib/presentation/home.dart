@@ -11,7 +11,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final searchController = TextEditingController();
 
-  // List event asli
   final List<Map<String, String>> events = [
     {"title": "Menghadapi AI dimasa kini", "time": "13.00 PM"},
     {"title": "AI untuk pemula", "time": "07.00 AM"},
@@ -20,7 +19,6 @@ class _HomeState extends State<Home> {
     {"title": "Clean architecture", "time": "14.00 AM"},
   ];
 
-  // List yang akan ditampilkan (filtered)
   late List<Map<String, String>> filteredEvents;
 
   @override
@@ -54,87 +52,87 @@ class _HomeState extends State<Home> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Events",
-                style: TextStyle(
-                  color: Colors.green.shade600,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                "Events yang akan datang.",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 8),
-
-              // EMAIL + LOGOUT
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Welcome ${widget.email}",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/');
-                    },
-                    child: const Text(
-                      "Logout",
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-              const Text(
-                "Segera!",
-                style: TextStyle(
-                  color: Colors.redAccent,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // 🔍 SEARCH BAR
-              TextField(
-                controller: searchController,
-                onChanged: _filterEvents,
-                decoration: InputDecoration(
-                  labelText: "Cari event...",
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // LIST
-              Expanded(
-                child: filteredEvents.isEmpty
-                    ? const Center(
-                        child: Text(
-                          "Tidak ada event ditemukan",
-                          style: TextStyle(color: Colors.grey),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // TITLE
+                      Text(
+                        "Events",
+                        style: TextStyle(
+                          color: Colors.green.shade600,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
                         ),
-                      )
-                    : ListView.builder(
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Events yang akan datang.",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // EMAIL + LOGOUT
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Welcome ${widget.email}",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/');
+                            },
+                            child: const Text(
+                              "Logout",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+                      const Text(
+                        "Segera!",
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // SEARCH BAR
+                      TextField(
+                        controller: searchController,
+                        onChanged: _filterEvents,
+                        decoration: InputDecoration(
+                          labelText: "Cari event...",
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // EVENT LIST
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: filteredEvents.length,
                         itemBuilder: (context, index) {
                           final event = filteredEvents[index];
@@ -163,8 +161,11 @@ class _HomeState extends State<Home> {
                           );
                         },
                       ),
-              ),
-            ],
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
