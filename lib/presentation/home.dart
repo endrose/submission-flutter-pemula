@@ -1,55 +1,92 @@
 import 'package:flutter/material.dart';
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   final String email;
   const Home({super.key, required this.email});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  final searchController = TextEditingController();
+
+  // List event asli
+  final List<Map<String, String>> events = [
+    {"title": "Menghadapi AI dimasa kini", "time": "13.00 PM"},
+    {"title": "AI untuk pemula", "time": "07.00 AM"},
+    {"title": "Dart pemula", "time": "08.00 AM"},
+    {"title": "AI dan Dart sebagai assistant", "time": "10.00 AM"},
+    {"title": "Clean architecture", "time": "14.00 AM"},
+  ];
+
+  // List yang akan ditampilkan (filtered)
+  late List<Map<String, String>> filteredEvents;
+
+  @override
+  void initState() {
+    super.initState();
+    filteredEvents = List.from(events);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterEvents(String query) {
+    setState(() {
+      filteredEvents = events
+          .where((e) => e["title"]!.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
+      appBar: AppBar(
+        title: const Text('Events', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green.shade600,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ================= TITLE =================
-              const Text(
+              Text(
                 "Events",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.green.shade600,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-
               const SizedBox(height: 4),
-
               const Text(
-                "Events yang akan datang. ",
+                "Events yang akan datang.",
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
+              const SizedBox(height: 8),
 
-              const SizedBox(height: 4),
-
-              // ============ EMAIL + LOGOUT ============
+              // EMAIL + LOGOUT
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Welcome $email",
+                    "Welcome ${widget.email}",
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
-                  // Tombol Logout
                   TextButton(
                     onPressed: () {
-                      // Kembali ke Login
                       Navigator.pushReplacementNamed(context, '/');
-                      // Kalau pakai MaterialPageRoute:
-                      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const Login()));
                     },
                     child: const Text(
                       "Logout",
@@ -62,107 +99,70 @@ class Home extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 32),
-
-              // ================= SECTION TITLE =================
+              const SizedBox(height: 24),
               const Text(
                 "Segera!",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // 🔍 SEARCH BAR
+              TextField(
+                controller: searchController,
+                onChanged: _filterEvents,
+                decoration: InputDecoration(
+                  labelText: "Cari event...",
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
 
               const SizedBox(height: 16),
 
-              // ================= LIST ITEMS =================
+              // LIST
               Expanded(
-                child: ListView(
-                  children: [
-                    _taskTile(
-                      title: "Menghadapi AI dimasa kini",
-                      time: "13.00 PM",
-                      highlight: true,
-                      onTap: () {
-                        // NAVIGATE TO DETAIL PAGE
-                        Navigator.pushNamed(
-                          context,
-                          '/detail',
-                          arguments: {
-                            'title': 'Menghadapi AI dimasa kini',
-                            'time': '13.00 PM',
-                            'email': email,
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _taskTile(
-                      title: "AI untuk pemula",
-                      time: "07.00 AM",
-                      onTap: () {
-                        // NAVIGATE TO DETAIL PAGE
-                        Navigator.pushNamed(
-                          context,
-                          '/detail',
-                          arguments: {
-                            'title': 'AI untuk pemula',
-                            'time': '07.00 AM',
-                            'email': email,
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _taskTile(
-                      title: "Dart pemula",
-                      time: "08.00 AM",
-                      onTap: () {
-                        // NAVIGATE TO DETAIL PAGE
-                        Navigator.pushNamed(
-                          context,
-                          '/detail',
-                          arguments: {
-                            'title': 'Dart pemula',
-                            'time': '08.00 AM',
-                            'email': email,
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _taskTile(
-                      title: "AI dan Dart sebagai asssitent",
-                      time: "10.00 AM",
-                      onTap: () {
-                        // NAVIGATE TO DETAIL PAGE
-                        Navigator.pushNamed(
-                          context,
-                          '/detail',
-                          arguments: {
-                            'title': 'AI dan Dart sebagai asssitent',
-                            'time': '10.00 AM',
-                            'email': email,
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _taskTile(
-                      title: "Clean architecture",
-                      time: "14.00 AM",
-                      onTap: () {
-                        // NAVIGATE TO DETAIL PAGE
-                        Navigator.pushNamed(
-                          context,
-                          '/detail',
-                          arguments: {
-                            'title': 'Clean architecture',
-                            'time': '14.00 AM',
-                            'email': email,
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                child: filteredEvents.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "Tidak ada event ditemukan",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filteredEvents.length,
+                        itemBuilder: (context, index) {
+                          final event = filteredEvents[index];
+                          return Column(
+                            children: [
+                              _taskTile(
+                                title: event["title"]!,
+                                time: event["time"]!,
+                                highlight:
+                                    event["title"] ==
+                                    "Menghadapi AI dimasa kini",
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/detail',
+                                    arguments: {
+                                      'title': event["title"]!,
+                                      'time': event["time"]!,
+                                      'email': widget.email,
+                                    },
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                          );
+                        },
+                      ),
               ),
             ],
           ),
@@ -171,7 +171,6 @@ class Home extends StatelessWidget {
     );
   }
 
-  // ================= CARD ITEM =================
   Widget _taskTile({
     required String title,
     required String time,
@@ -188,7 +187,6 @@ class Home extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Icon bulat
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -197,10 +195,7 @@ class Home extends StatelessWidget {
               ),
               child: const Icon(Icons.work, size: 20, color: Colors.white),
             ),
-
             const SizedBox(width: 16),
-
-            // Text
             Expanded(
               child: Text(
                 title,
@@ -210,8 +205,6 @@ class Home extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Time
             Text(
               time,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),

@@ -1,40 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:submission_flutter_pemula/presentation/home.dart';
 
-// ==========================================================
-// HELPER CLASS untuk controller + validasi (tetap bisa dipakai di Stateless)
-// ==========================================================
-class LoginController {
+class Login extends StatefulWidget {
+  const Login({super.key});
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  String? validate(String email, String password) {
-    if (email.isEmpty) return "Email tidak boleh kosong";
+  // stateful properties
+  bool _obscurePassword = true;
+  bool _rememberMe = false;
 
-    final emailRegex = RegExp(r"^[\w\.\-]+@([\w\-]+\.)+[\w]{2,4}$");
-    if (!emailRegex.hasMatch(email)) return "Format email tidak valid";
-
-    if (password.isEmpty) return "Password tidak boleh kosong (Isikan apa saja!)";
-
-    if (password.length < 6) return "Password minimal 6 karakter";
-
-    return null; // valid
+  @override
+  void dispose() {
+    // dispose controller untuk hindari memory leak
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
-}
 
-// ==========================================================
-// LOGIN PAGE – Versi Stateless
-// ==========================================================
-class Login extends StatelessWidget {
-  Login({super.key});
-
-  final controller = LoginController();
-
-  void _showSnackbar(BuildContext context, String msg) {
+  void _showSnackbar(String message, {Color bg = Colors.red}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(msg),
+        backgroundColor: bg,
+        content: Text(message),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
       ),
@@ -47,36 +41,53 @@ class Login extends StatelessWidget {
     final isMobile = width < 800;
 
     return Scaffold(
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: isMobile
-            ? _buildMobileLayout(context)
-            : _buildWebLayout(context),
+      // SafeArea agar tidak bertabrakan di notch/device UI
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: isMobile ? _buildMobileLayout() : _buildWebLayout(),
+        ),
       ),
     );
   }
 
-  // ======================= MOBILE (FORM ONLY) ===========================
-  Widget _buildMobileLayout(BuildContext context) {
+  // MOBILE: tampilkan form saja (no image)
+  Widget _buildMobileLayout() {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: _formSection(context),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: _formSection(),
+        ),
       ),
     );
   }
 
-  // ======================= DESKTOP/TABLET (IMAGE + FORM) =======================
-  Widget _buildWebLayout(BuildContext context) {
+  // WEB/DESKTOP: kiri image, kanan form
+  Widget _buildWebLayout() {
     return Row(
       children: [
+        // kiri: image (hide on small screens handled by isMobile)
         Expanded(flex: 3, child: _headerImage()),
-        Expanded(flex: 2, child: Center(child: _formSection(context))),
+
+        // kanan: form, dibungkus SingleChildScrollView agar tidak overflow
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: _formSection(),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  // ======================= HEADER IMAGE ==============================
   Widget _headerImage() {
     return Container(
       decoration: const BoxDecoration(
@@ -87,10 +98,10 @@ class Login extends StatelessWidget {
       ),
       child: Container(
         color: Colors.black.withOpacity(0.4),
-        child: const Center(
+        child: Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: const [
               Icon(Icons.login, color: Colors.white, size: 32),
               SizedBox(width: 12),
               Text(
@@ -108,19 +119,18 @@ class Login extends StatelessWidget {
     );
   }
 
-  // ======================= FORM SECTION ===============================
-  Widget _formSection(BuildContext context) {
+  Widget _formSection() {
     return Container(
-      width: 400,
-      padding: const EdgeInsets.all(32),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(0.06),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -131,44 +141,72 @@ class Login extends StatelessWidget {
             "Submission",
             style: TextStyle(
               color: Colors.green.shade600,
-              fontSize: 32,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(height: 20),
 
-          const SizedBox(height: 32),
-
-          // EMAIL FIELD
+          // EMAIL
           TextField(
-            controller: controller.emailController,
+            controller: emailController,
+            keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               labelText: "Email",
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
               ),
+              prefixIcon: const Icon(Icons.email),
             ),
           ),
+          const SizedBox(height: 12),
 
-          const SizedBox(height: 16),
-
-          // PASSWORD FIELD
+          // PASSWORD dengan toggle visibility (menggunakan setState)
           TextField(
-            controller: controller.passwordController,
-            obscureText: true,
+            controller: passwordController,
+            obscureText: _obscurePassword,
             decoration: InputDecoration(
               labelText: "Password",
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              prefixIcon: const Icon(Icons.lock),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword; // penggunaan setState
+                  });
+                },
               ),
             ),
           ),
+          const SizedBox(height: 12),
 
-          const SizedBox(height: 24),
+          // remember me (Stateful)
+          Row(
+            children: [
+              Checkbox(
+                value: _rememberMe,
+                onChanged: (v) {
+                  setState(() {
+                    _rememberMe = v ?? false; // penggunaan setState
+                  });
+                },
+              ),
+              const SizedBox(width: 4),
+              const Text("Remember me"),
+            ],
+          ),
 
-          // SIGN IN BUTTON
+          const SizedBox(height: 12),
+
+          // BUTTON LOGIN
           SizedBox(
             width: double.infinity,
-            height: 45,
+            height: 46,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
@@ -177,52 +215,91 @@ class Login extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                final email = controller.emailController.text.trim();
-                final pass = controller.passwordController.text.trim();
+                final email = emailController.text.trim();
+                final password = passwordController.text;
 
-                final msg = controller.validate(email, pass);
-                if (msg != null) {
-                  _showSnackbar(context, msg);
+                if (email.isEmpty) {
+                  _showSnackbar("Email tidak boleh kosong");
+                  return;
+                }
+                final emailRegex = RegExp(r"^[\w\.\-]+@([\w\-]+\.)+[\w]{2,4}$");
+                if (!emailRegex.hasMatch(email)) {
+                  _showSnackbar("Format email tidak valid");
+                  return;
+                }
+                if (password.isEmpty) {
+                  _showSnackbar("Password tidak boleh kosong");
+                  return;
+                }
+                if (password.length < 6) {
+                  _showSnackbar("Password minimal 6 karakter");
                   return;
                 }
 
+                // jika valid -> lanjut ke Home
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => Home(email: email)),
                 );
               },
-              child: const Text(
+              child: Text(
                 "Sign In",
                 style: TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
 
-          const SizedBox(height: 24),
-          const Text("Or sign in with"),
+          const SizedBox(height: 16),
+          const Text("Or sign in with", style: TextStyle(color: Colors.grey)),
           const SizedBox(height: 12),
 
-          // SOCIAL LOGIN
+          // social icons: beri feedback Snackbar ketika diklik
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _socialIcon("assets/images/google.png"),
+              InkWell(
+                onTap: () => _showSnackbar(
+                  "Google sign-in belum tersedia",
+                  bg: Colors.blue,
+                ),
+                child: Image.asset(
+                  "assets/images/google.png",
+                  width: 36,
+                  height: 36,
+                ),
+              ),
               const SizedBox(width: 16),
-              _socialIcon("assets/images/twitter.jpg"),
+              InkWell(
+                onTap: () => _showSnackbar(
+                  "Twitter sign-in belum tersedia",
+                  bg: Colors.blueAccent,
+                ),
+                child: Image.asset(
+                  "assets/images/twitter.jpg",
+                  width: 36,
+                  height: 36,
+                ),
+              ),
               const SizedBox(width: 16),
-              _socialIcon("assets/images/instagram.jpg"),
+              InkWell(
+                onTap: () => _showSnackbar(
+                  "Instagram sign-in belum tersedia",
+                  bg: Colors.blueAccent,
+                ),
+                child: Image.asset(
+                  "assets/images/instagram.jpg",
+                  width: 36,
+                  height: 36,
+                ),
+              ),
             ],
           ),
         ],
       ),
     );
-  }
-
-  Widget _socialIcon(String path) {
-    return Image.asset(path, width: 32, height: 32);
   }
 }

@@ -16,7 +16,6 @@ class DetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -33,27 +32,21 @@ class DetailPage extends StatelessWidget {
           ),
         ),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ================= HEADER =================
             Text(
               title,
               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w700),
             ),
-
             const SizedBox(height: 8),
-
             Text(
               "Detail informasi dari menu yang kamu pilih.",
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
-
             const SizedBox(height: 8),
-
             Text(
               "Login as: $email",
               style: TextStyle(
@@ -62,10 +55,7 @@ class DetailPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const SizedBox(height: 32),
-
-            // ================= DETAIL CARD =================
+            const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -76,28 +66,33 @@ class DetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _detailRow("Title", title),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _detailRow("Time", time),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _detailRow("Status", "Upcoming"),
                 ],
               ),
             ),
-
             const Spacer(),
-
-            // ================= BUTTON =================
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   backgroundColor: Colors.black87,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  // berikan feedback tombol ditekan
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Marked as done (demo)"),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
                 child: const Text(
                   "Mark as Done",
                   style: TextStyle(fontSize: 16, color: Colors.white),
@@ -110,7 +105,6 @@ class DetailPage extends StatelessWidget {
     );
   }
 
-  // ================= REUSABLE DETAIL ROW =================
   Widget _detailRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
